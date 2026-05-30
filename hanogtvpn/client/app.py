@@ -7,6 +7,16 @@ and connection lifecycle management.
 
 import customtkinter as ctk
 import sys
+import os
+from PIL import Image
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 from hanogtvpn.client.ui.theme import Theme
 from hanogtvpn.client.ui.main_panel import MainPanel
@@ -50,6 +60,12 @@ class HanogtVPNApp(ctk.CTk):
         self.minsize(920, 640)
         self.resizable(False, False)
         self.configure(fg_color=c["bg_primary"])
+        
+        # Set Window Icon
+        try:
+            self.iconbitmap(resource_path("hanogtvpn/client/assets/logo.ico"))
+        except Exception as e:
+            self.logger.warning(f"Could not load window icon: {e}")
 
         # Track active panel
         self._active_panel = "main"
@@ -78,10 +94,16 @@ class HanogtVPNApp(ctk.CTk):
         logo_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         logo_frame.pack(fill="x", padx=20, pady=(30, 5))
 
-        ctk.CTkLabel(
-            logo_frame, text="🛡️",
-            font=ctk.CTkFont(size=32),
-        ).pack()
+        # Logo Image
+        try:
+            logo_img = ctk.CTkImage(
+                light_image=Image.open(resource_path("hanogtvpn/client/assets/logo.png")),
+                dark_image=Image.open(resource_path("hanogtvpn/client/assets/logo.png")),
+                size=(64, 64)
+            )
+            ctk.CTkLabel(logo_frame, text="", image=logo_img).pack()
+        except Exception:
+            ctk.CTkLabel(logo_frame, text="🛡️", font=ctk.CTkFont(size=32)).pack()
 
         ctk.CTkLabel(
             logo_frame, text="HanogtVPN",
@@ -201,7 +223,7 @@ class HanogtVPNApp(ctk.CTk):
 
         self.statusbar_label = ctk.CTkLabel(
             self.status_bar,
-            text="HanogtVPN v1.0.0  •  Hazır",
+            text=f"HanogtVPN v{APP_VERSION}  •  Hazır",
             font=ctk.CTkFont(size=11),
             text_color=c["text_muted"],
         )
@@ -257,22 +279,22 @@ class HanogtVPNApp(ctk.CTk):
             self.sidebar_status.configure(
                 text="⬤ Bağlı Değil", text_color=c["accent_danger"]
             )
-            self.statusbar_label.configure(text="HanogtVPN v1.0.0  •  Hazır")
+            self.statusbar_label.configure(text=f"HanogtVPN v{APP_VERSION}  •  Hazır")
         elif state == ConnectionState.CONNECTING:
             self.sidebar_status.configure(
                 text="⬤ Bağlanıyor...", text_color=c["accent_warning"]
             )
-            self.statusbar_label.configure(text="HanogtVPN v1.0.0  •  Bağlanıyor...")
+            self.statusbar_label.configure(text=f"HanogtVPN v{APP_VERSION}  •  Bağlanıyor...")
         elif state == ConnectionState.CONNECTED:
             self.sidebar_status.configure(
                 text="⬤ Bağlı", text_color=c["success"]
             )
-            self.statusbar_label.configure(text="HanogtVPN v1.0.0  •  Bağlı")
+            self.statusbar_label.configure(text=f"HanogtVPN v{APP_VERSION}  •  Bağlı")
         elif state == ConnectionState.ERROR:
             self.sidebar_status.configure(
                 text="⬤ Hata", text_color=c["accent_danger"]
             )
-            self.statusbar_label.configure(text="HanogtVPN v1.0.0  •  Bağlantı Hatası")
+            self.statusbar_label.configure(text=f"HanogtVPN v{APP_VERSION}  •  Bağlantı Hatası")
 
     def _on_statusbar_stats(self, stats: dict):
         if stats["state"] == ConnectionState.CONNECTED:
