@@ -43,9 +43,9 @@ class HanogtVPNApp(ctk.CTk):
 
         # Settings
         self.settings = SettingsManager()
-        theme_mode = self.settings.get("theme", "Dark")
-        Theme.set_theme(theme_mode)
-        ctk.set_appearance_mode(theme_mode)
+        self._theme_mode = self.settings.get("theme", "Dark")
+        Theme.set_theme(self._theme_mode)
+        ctk.set_appearance_mode(self._theme_mode)
 
         self.logger = VPNLogger.get_logger("app")
         VPNLogger.set_level(self.settings.get("log_level", "INFO"))
@@ -171,7 +171,7 @@ class HanogtVPNApp(ctk.CTk):
             font=ctk.CTkFont(size=12),
             corner_radius=8,
         )
-        self.theme_btn.set("Koyu" if theme_mode == "Dark" else "Açık")
+        self.theme_btn.set("Koyu" if self._theme_mode == "Dark" else "Açık")
         self.theme_btn.pack(fill="x", padx=5)
 
         # Connection status in sidebar
